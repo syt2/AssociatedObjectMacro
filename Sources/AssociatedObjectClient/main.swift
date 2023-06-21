@@ -1,8 +1,42 @@
+import Foundation
 import AssociatedObject
 
-let a = 17
-let b = 25
+class ClassA: NSObject {
+    
+    var c = false
+}
 
-let (result, code) = #stringify(a + b)
+struct StructB {
+    let randomValue = Int.random(in: Int.min ... Int.max)
+}
 
-print("The value \(result) was produced by the code \"\(code)\"")
+extension ClassA {
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_COPY_NONATOMIC)
+    var associatedValueA: String?
+    
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: StructB())
+    var associatedValueB: StructB?
+    
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_ASSIGN, defaultValue: UserDefaults.standard.integer(forKey: "KeyC"))
+    var associatedValueC: Int {
+        willSet(newValueC) {
+            print("set value C to \(newValueC)")
+        }
+        didSet {
+            guard 0..<10 ~= associatedValueC else {
+                associatedValueC = oldValue
+                return
+            }
+            UserDefaults.standard.setValue(associatedValueC, forKey: "KeyC")
+        }
+    }
+}
+
+let A = ClassA()
+debugPrint(A.associatedValueA, A.associatedValueB, A.associatedValueC)
+A.associatedValueA = "@AssociatedObject"
+A.associatedValueB = nil
+A.associatedValueC = 3
+A.associatedValueC = 99
+debugPrint(A.associatedValueA, A.associatedValueB, A.associatedValueC)
+

@@ -1,11 +1,9 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
+import ObjectiveC
 
-/// A macro that produces both a value and a string containing the
-/// source code that generated the value. For example,
-///
-///     #stringify(x + y)
-///
-/// produces a tuple `(x + y, "x + y")`.
-@freestanding(expression)
-public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(module: "AssociatedObjectMacros", type: "StringifyMacro")
+@attached(peer, names: arbitrary)
+@attached(accessor)
+public macro AssociatedObject(policy: objc_AssociationPolicy, defaultValue: Any?) = #externalMacro(module: "AssociatedObjectMacros", type: "AssociatedObjectMacro")
+
+@attached(peer, names: arbitrary)
+@attached(accessor)
+public macro AssociatedObject(policy: objc_AssociationPolicy) = #externalMacro(module: "AssociatedObjectMacros", type: "AssociatedObjectMacro")
