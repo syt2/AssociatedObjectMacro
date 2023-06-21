@@ -196,6 +196,42 @@ final class AssociatedObjectTests: XCTestCase {
             )
             
         }
+        
+        let v =
+        """
+        extension NSObject {
+            // For optional types, the default value is `nil` by default.
+            @AssociatedObject(policy: .OBJC_ASSOCIATION_COPY_NONATOMIC)
+            var associatedValueA: String?
+            
+            // "Assigning a default value to a variable.
+            @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: Date())
+            var associatedValueB: Date?
+            
+            // Adding willSet and didSet callbacks.
+            @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: UserDefaults.standard.integer(forKey: "KeyC"))
+            var associatedValueC: Int {
+                willSet(newValueC) {
+                    print("set value C to \\(newValueC)")
+                }
+                didSet {
+                    guard 0..<10 ~= associatedValueC else {
+                        associatedValueC = oldValue
+                        return
+                    }
+                    UserDefaults.standard.setValue(associatedValueC, forKey: "KeyC")
+                }
+            }
+        }
+        """
+        let origSourceFile = Parser.parse(source: v)
+
+        // Expand all macros in the source.
+        let context = BasicMacroExpansionContext(
+            sourceFiles: [origSourceFile: .init(moduleName: "AssociatedObject", fullFilePath: #filePath)]
+        )
+        let expandedSourceFile = origSourceFile.expand(macros: testMacros, in: context).formatted()
+        print(expandedSourceFile.description.trimmingTrailingWhitespace())
     }
 }
 

@@ -1,23 +1,21 @@
 import Foundation
 import AssociatedObject
 
-class ClassA: NSObject {
-    
-    var c = false
-}
-
 struct StructB {
     let randomValue = Int.random(in: Int.min ... Int.max)
 }
 
-extension ClassA {
+extension NSObject {
+    // For optional types, the default value is `nil` by default.
     @AssociatedObject(policy: .OBJC_ASSOCIATION_COPY_NONATOMIC)
     var associatedValueA: String?
     
-    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: StructB())
-    var associatedValueB: StructB?
+    // "Assigning a default value to a variable.
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: Date())
+    var associatedValueB: Date?
     
-    @AssociatedObject(policy: .OBJC_ASSOCIATION_ASSIGN, defaultValue: UserDefaults.standard.integer(forKey: "KeyC"))
+    // Adding willSet and didSet callbacks.
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: UserDefaults.standard.integer(forKey: "KeyC"))
     var associatedValueC: Int {
         willSet(newValueC) {
             print("set value C to \(newValueC)")
@@ -32,7 +30,7 @@ extension ClassA {
     }
 }
 
-let A = ClassA()
+let A = NSObject()
 debugPrint(A.associatedValueA, A.associatedValueB, A.associatedValueC)
 A.associatedValueA = "@AssociatedObject"
 A.associatedValueB = nil
