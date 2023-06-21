@@ -10,7 +10,7 @@ Associated Object Macro wraps `objc_getAssociatedObject` and `objc_setAssociated
 ### Swift Package Manager
 Simply add this repository to your project using SPM to use it.
 - File > Swift Packages > Add Package Dependency
-- Add https://github.com/syt2/YYCache-Swift in SPM
+- Add `https://github.com/syt2/AssociatedObjectMacro` in SPM
 - `import AssociatedObject` in files
 
 ## Usage
