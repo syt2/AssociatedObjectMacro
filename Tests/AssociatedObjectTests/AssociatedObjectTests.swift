@@ -34,20 +34,18 @@ extension TestClass {
     @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: 95)
     var point: Int? {
         willSet {
-            print("point will set from \(point) to \(newValue)")
+            print("point will set from \(String(describing: point)) to \(String(describing: newValue))")
         }
         didSet {
             guard let newPoint = point else { return }
             if 0...100 ~= newPoint {
                 print("point set to \(newPoint)")
             } else {
-                point = nil
-                print("point exceed limit, set to nil")
+                self.point = nil
+                print("point \(String(describing: oldValue)) exceed limit, set to nil")
             }
         }
     }
-    
-
 }
 
 
@@ -204,7 +202,7 @@ final class AssociatedObjectTests: XCTestCase {
             @AssociatedObject(policy: .OBJC_ASSOCIATION_COPY_NONATOMIC)
             var associatedValueA: String?
             
-            // "Assigning a default value to a variable.
+            // Assigning a default value to a variable.
             @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: Date())
             var associatedValueB: Date?
             
@@ -216,12 +214,17 @@ final class AssociatedObjectTests: XCTestCase {
                 }
                 didSet {
                     guard 0..<10 ~= associatedValueC else {
-                        associatedValueC = oldValue
+                        self.associatedValueC = oldValue
                         return
                     }
                     UserDefaults.standard.setValue(associatedValueC, forKey: "KeyC")
                 }
             }
+            
+            @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: {
+                Date().timeIntervalSince1970
+            }())
+            var associatedValueD: Double?
         }
         """
         let origSourceFile = Parser.parse(source: v)
@@ -241,4 +244,66 @@ extension AssociatedObjectTests {
             $0.replacingOccurrences(of: " ", with: "")
         }.joined(separator: "")
     }
+}
+
+extension NSObject {
+    var associatedValueA: String? {
+        get {
+            objc_getAssociatedObject(self, &Self.__associated_associatedValueA_Key) as? String ?? nil
+        }
+        set {
+            objc_setAssociatedObject(self, &Self.__associated_associatedValueA_Key, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
+        }
+    }
+    fileprivate static var __associated_associatedValueA_Key: Bool = false
+    
+    var associatedValueB: Date? {
+        get {
+            objc_getAssociatedObject(self, &Self.__associated_associatedValueB_Key) as? Date ??
+            (objc_getAssociatedObject(self, &Self.__associated_associatedValueB_setted_Key) as? Bool ?? false ? nil : Date())
+        }
+        set {
+            objc_setAssociatedObject(self, &Self.__associated_associatedValueB_Key, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(self, &Self.__associated_associatedValueB_setted_Key, true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+    fileprivate static var __associated_associatedValueB_Key: Bool = false
+    fileprivate static var __associated_associatedValueB_setted_Key: Bool = false
+    
+    var associatedValueC: Int  {
+        get {
+            objc_getAssociatedObject(self, &Self.__associated_associatedValueC_Key) as? Int  ?? UserDefaults.standard.integer(forKey: "KeyC")
+        }
+        set {
+            let oldValue = associatedValueC
+            let newValueC = newValue
+            ({
+                        print("set value C to \(newValueC)")
+                    }())
+            objc_setAssociatedObject(self, &Self.__associated_associatedValueC_Key, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            ({
+                        guard 0 ..< 10 ~= associatedValueC else {
+                            self.associatedValueC = oldValue
+                            return
+                        }
+                        UserDefaults.standard.setValue(associatedValueC, forKey: "KeyC")
+                    }())
+        }
+    }
+    fileprivate static var __associated_associatedValueC_Key: Bool = false
+    
+    var associatedValueD: Double? {
+        get {
+            objc_getAssociatedObject(self, &Self.__associated_associatedValueD_Key) as? Double ??
+            (objc_getAssociatedObject(self, &Self.__associated_associatedValueD_setted_Key) as? Bool ?? false ? nil : {
+                Date().timeIntervalSince1970
+            }())
+        }
+        set {
+            objc_setAssociatedObject(self, &Self.__associated_associatedValueD_Key, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(self, &Self.__associated_associatedValueD_setted_Key, true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+    fileprivate static var __associated_associatedValueD_Key: Bool = false
+    fileprivate static var __associated_associatedValueD_setted_Key: Bool = false
 }

@@ -26,19 +26,19 @@ extension AssociatedObjectMacroDiagnostic: DiagnosticMessage {
     public var message: String {
         switch self {
         case .requireVariableDeclaration:
-            return "`@AssociatedObject` macro must be appended to the property declaration."
+            return "`@AssociatedObject` macro must be followed by the declaration of a property."
         case .requireTypePolicy:
             return "`@AssociatedObject` macro must specify `objc_AssociationPolicy` explicitly."
         case .requireValueType:
-            return "`@AssociatedObject` macro must specify value type explicitly."
+            return "`@AssociatedObject` macro must specify property type explicitly."
         case .requireNonNilDefaultValue:
-            return "`@AssociatedObject` macro must specify non-nil default value for non-nil value type."
+            return "`@AssociatedObject` macro must specify non-nil default value for non-optional type."
         case .setActionBlocksInvalidate:
-            return "`@AssociatedObject` macro receive invalidate didSet/willSet closures."
+            return "`@AssociatedObject` macro receives invalidate didSet/willSet closures."
         case .onlySupportSetActionInClosure:
-            return "`@AssociatedObject` macro olny support willSet/didSet in closures."
+            return "`@AssociatedObject` macro olny supports willSet/didSet in closures."
         case .defaultValueAssignmentError:
-            return "`@AssociatedObject` macro must provide default value in params. Move your default value to @AssociatedObject(policy:defaultValue:)."
+            return "`@AssociatedObject` macro only supports specifying the default value in the macro parameters. Move your default value to @AssociatedObject(policy:defaultValue:)."
         }
     }
 

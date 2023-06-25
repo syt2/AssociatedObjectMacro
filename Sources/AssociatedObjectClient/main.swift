@@ -10,7 +10,7 @@ extension NSObject {
     @AssociatedObject(policy: .OBJC_ASSOCIATION_COPY_NONATOMIC)
     var associatedValueA: String?
     
-    // "Assigning a default value to a variable.
+    // Assigning a default value to a variable.
     @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: Date())
     var associatedValueB: Date?
     
@@ -22,19 +22,25 @@ extension NSObject {
         }
         didSet {
             guard 0..<10 ~= associatedValueC else {
-                associatedValueC = oldValue
+                self.associatedValueC = oldValue
                 return
             }
             UserDefaults.standard.setValue(associatedValueC, forKey: "KeyC")
         }
     }
+    
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: {
+        Date().timeIntervalSince1970
+    }())
+    var associatedValueD: Double?
 }
 
 let A = NSObject()
-debugPrint(A.associatedValueA, A.associatedValueB, A.associatedValueC)
+debugPrint(A.associatedValueA as Any, A.associatedValueB as Any, A.associatedValueC, A.associatedValueD as Any)
 A.associatedValueA = "@AssociatedObject"
 A.associatedValueB = nil
 A.associatedValueC = 3
 A.associatedValueC = 99
-debugPrint(A.associatedValueA, A.associatedValueB, A.associatedValueC)
+A.associatedValueD = Date().timeIntervalSince1970
+debugPrint(A.associatedValueA as Any, A.associatedValueB as Any, A.associatedValueC, A.associatedValueD as Any)
 

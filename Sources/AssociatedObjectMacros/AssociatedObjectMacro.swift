@@ -19,6 +19,8 @@ extension AssociatedObjectMacro: PeerMacro {
             return []
         }
         
+        // associated object key
+        // fileprivate static var __associated_{identifier}_Key: Bool = false
         let keyDeclaration = VariableDeclSyntax(
             modifiers: ModifierListSyntax {
                 DeclModifierSyntax(name: .keyword(.fileprivate))
@@ -32,11 +34,13 @@ extension AssociatedObjectMacro: PeerMacro {
                     initializer: InitializerClauseSyntax(value: ExprSyntax(stringLiteral: "false"))
                 )
             }
-        ).formatted().as(VariableDeclSyntax.self)!
+        )
         
         var result = [DeclSyntax(keyDeclaration)]
         
         if needSetFlag(binding: binding, node: node) {
+            // associated object setted flag key, only for non-optional type which default value != nil
+            // fileprivate static var __associated_{identifier}_setted_Key: Bool = false
             let valueSettedDeclaration = VariableDeclSyntax(
                 modifiers: ModifierListSyntax {
                     DeclModifierSyntax(name: .keyword(.fileprivate))
@@ -50,7 +54,7 @@ extension AssociatedObjectMacro: PeerMacro {
                         initializer: InitializerClauseSyntax(value: ExprSyntax(stringLiteral: "false"))
                     )
                 }
-            ).formatted().as(VariableDeclSyntax.self)!
+            )
             result.append(DeclSyntax(valueSettedDeclaration))
         }
         
@@ -72,7 +76,7 @@ extension AssociatedObjectMacro: AccessorMacro {
             return []
         }
         
-        // get policy type
+        // associated object policy type
         guard case let .argumentList(arguments) = node.argument,
               let policy = arguments.first(where: {
                   $0.label?.tokenKind == .identifier("policy")
@@ -87,12 +91,12 @@ extension AssociatedObjectMacro: AccessorMacro {
             return []
         }
         
-        // get default value
+        // default value
         let defaultValue: ExprSyntaxProtocol = arguments.first(where: {
             $0.label?.tokenKind == .identifier("defaultValue")
         })?.expression ?? NilLiteralExprSyntax()
         
-        // get value type
+        // value type
         let originalType = binding.typeAnnotation?.type
         let type: TypeSyntax
         if let wrappedType = originalType?.as(OptionalTypeSyntax.self)?.wrappedType {
@@ -107,7 +111,7 @@ extension AssociatedObjectMacro: AccessorMacro {
             return []
         }
         
-        // get willSet/didSet closure
+        // willSet/didSet closure
         var willSetBlock: SetActionBlockComponent? = nil
         var didSetBlock: SetActionBlockComponent? = nil
         
@@ -163,7 +167,6 @@ private extension AssociatedObjectMacro {
                                     node: SwiftSyntax.AttributeSyntax) -> Bool {
         // If value cannot be nil, add a setted flag
         let valueOptionable = binding.typeAnnotation?.type.is(OptionalTypeSyntax.self) == true
-        // get policy type
         var defaultValueNotNil = false
         if case let .argumentList(arguments) = node.argument,
            let defaultValue: ExprSyntaxProtocol = arguments.first(where: {
@@ -178,6 +181,7 @@ private extension AssociatedObjectMacro {
     static func associateKeySetFlagSyntax(of identifier: TokenSyntax) -> TokenSyntax {
         .identifier("__associated_\(identifier.trimmed)_setted_Key")
     }
+    
     static func associateKeySyntax(of identifier: TokenSyntax) -> TokenSyntax {
         .identifier("__associated_\(identifier.trimmed)_Key")
     }
@@ -194,7 +198,7 @@ private extension AssociatedObjectMacro {
                     (objc_getAssociatedObject(self, &Self.\(associateKeySetFlagSyntax(of: identifier))) as? Bool ?? false ? nil : \(defaultValue))
                 }
                 """
-            ).formatted().as(AccessorDeclSyntax.self)!
+            )
         }
         return AccessorDeclSyntax(stringLiteral:
             """
@@ -202,7 +206,7 @@ private extension AssociatedObjectMacro {
                 objc_getAssociatedObject(self, &Self.\(associateKeySyntax(of: identifier))) as? \(type) ?? \(defaultValue)
             }
             """
-        ).formatted().as(AccessorDeclSyntax.self)!
+        )
     }
     
     // TODO: format output
@@ -254,6 +258,6 @@ private extension AssociatedObjectMacro {
             \(insideSetBlock)
         }
         """
-        ).formatted().as(AccessorDeclSyntax.self)!
+        )
     }
 }
