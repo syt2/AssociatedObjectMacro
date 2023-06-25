@@ -85,16 +85,16 @@ extension NSObject {
             let oldValue = associatedValueC
             let newValueC = newValue
             ({
-                        print("set value C to \(newValueC)")
-                    }())
+                print("set value C to \(newValueC)")
+            }())
             objc_setAssociatedObject(self, &Self.__associated_associatedValueC_Key, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             ({
-                        guard 0 ..< 10 ~= associatedValueC else {
-                            self.associatedValueC = oldValue
-                            return
-                        }
-                        UserDefaults.standard.setValue(associatedValueC, forKey: "KeyC")
-                    }())
+                guard 0 ..< 10 ~= associatedValueC else {
+                    self.associatedValueC = oldValue
+                    return
+                }
+                UserDefaults.standard.setValue(associatedValueC, forKey: "KeyC")
+            }())
         }
     }
     fileprivate static var __associated_associatedValueC_Key: Bool = false
