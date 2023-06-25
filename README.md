@@ -44,8 +44,6 @@ extension NSObject {
 }
 ```
 
-- Tips: A data type must be explicitly specified.
-
 ---
 
 After macro expansion, the above code becomes as follows.
@@ -95,3 +93,9 @@ extension NSObject {
     fileprivate static var __associated_associatedValueC_Key: Bool = false
 }
 ```
+
+### Tips: 
+- A data type must be explicitly specified.
+- The default value must be specified in the macro's parameters, and cannot be assigned using `=`. 
+- For optional types, If no explicit default value is specified, the default value is `nil`.
+- Support for `willSet` and `didSet` methods to observe property changes.
