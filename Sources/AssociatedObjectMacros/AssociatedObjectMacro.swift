@@ -20,7 +20,7 @@ extension AssociatedObjectMacro: PeerMacro {
         }
         
         // associated object key
-        // fileprivate static var __associated_{identifier}_Key: Bool = false
+        // fileprivate static var __associated_{identifier}_Key: Void?
         let keyDeclaration = VariableDeclSyntax(
             modifiers: ModifierListSyntax {
                 DeclModifierSyntax(name: .keyword(.fileprivate))
@@ -30,8 +30,7 @@ extension AssociatedObjectMacro: PeerMacro {
             bindings: PatternBindingListSyntax {
                 PatternBindingSyntax(
                     pattern: IdentifierPatternSyntax(identifier: associateKeySyntax(of: identifier)),
-                    typeAnnotation: .init(type: SimpleTypeIdentifierSyntax(name: .identifier("Bool"))),
-                    initializer: InitializerClauseSyntax(value: ExprSyntax(stringLiteral: "false"))
+                    typeAnnotation: .init(type: OptionalTypeSyntax(wrappedType: SimpleTypeIdentifierSyntax(name: "Void")))
                 )
             }
         )
@@ -40,7 +39,7 @@ extension AssociatedObjectMacro: PeerMacro {
         
         if needSetFlag(binding: binding, node: node) {
             // associated object setted flag key, only for non-optional type which default value != nil
-            // fileprivate static var __associated_{identifier}_setted_Key: Bool = false
+            // fileprivate static var __associated_{identifier}_setted_Key: Void?
             let valueSettedDeclaration = VariableDeclSyntax(
                 modifiers: ModifierListSyntax {
                     DeclModifierSyntax(name: .keyword(.fileprivate))
@@ -50,8 +49,7 @@ extension AssociatedObjectMacro: PeerMacro {
                 bindings: PatternBindingListSyntax {
                     PatternBindingSyntax(
                         pattern: IdentifierPatternSyntax(identifier: associateKeySetFlagSyntax(of: identifier)),
-                        typeAnnotation: .init(type: SimpleTypeIdentifierSyntax(name: .identifier("Bool"))),
-                        initializer: InitializerClauseSyntax(value: ExprSyntax(stringLiteral: "false"))
+                        typeAnnotation: .init(type: OptionalTypeSyntax(wrappedType: SimpleTypeIdentifierSyntax(name: "Void")))
                     )
                 }
             )

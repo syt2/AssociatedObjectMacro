@@ -16,6 +16,7 @@ Simply add this repository to your project using SPM to use it.
 ## Usage
 Example usage within your project
 ``` swift
+import Foundation
 import AssociatedObject
 
 extension NSObject {
@@ -31,7 +32,7 @@ extension NSObject {
     @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: UserDefaults.standard.integer(forKey: "KeyC"))
     var associatedValueC: Int {
         willSet(newValueC) {
-            print("set value C to \\(newValueC)")
+            print("set value C to \(newValueC)")
         }
         didSet {
             guard 0..<10 ~= associatedValueC else {
@@ -42,10 +43,10 @@ extension NSObject {
         }
     }
     
-    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: {
-        Date().timeIntervalSince1970
-    }())
-    var associatedValueD: Double?
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_COPY, defaultValue: {
+        print("associatedValueD")
+    })
+    var associatedValueD: (() -> Void)?
 }
 ```
 
@@ -53,6 +54,9 @@ extension NSObject {
 
 After macro expansion, the above code becomes as follows.
 ```swift
+import Foundation
+import AssociatedObject
+
 extension NSObject {
     var associatedValueA: String? {
         get {
@@ -62,7 +66,7 @@ extension NSObject {
             objc_setAssociatedObject(self, &Self.__associated_associatedValueA_Key, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
         }
     }
-    fileprivate static var __associated_associatedValueA_Key: Bool = false
+    fileprivate static var __associated_associatedValueA_Key: Void?
     
     var associatedValueB: Date? {
         get {
@@ -74,8 +78,8 @@ extension NSObject {
             objc_setAssociatedObject(self, &Self.__associated_associatedValueB_setted_Key, true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
     }
-    fileprivate static var __associated_associatedValueB_Key: Bool = false
-    fileprivate static var __associated_associatedValueB_setted_Key: Bool = false
+    fileprivate static var __associated_associatedValueB_Key: Void?
+    fileprivate static var __associated_associatedValueB_setted_Key: Void?
     
     var associatedValueC: Int  {
         get {
@@ -97,22 +101,22 @@ extension NSObject {
             }())
         }
     }
-    fileprivate static var __associated_associatedValueC_Key: Bool = false
+    fileprivate static var __associated_associatedValueC_Key: Void?
     
-    var associatedValueD: Double? {
+    var associatedValueD: (() -> Void)? {
         get {
-            objc_getAssociatedObject(self, &Self.__associated_associatedValueD_Key) as? Double ??
+            objc_getAssociatedObject(self, &Self.__associated_associatedValueD_Key) as? (() -> Void) ??
             (objc_getAssociatedObject(self, &Self.__associated_associatedValueD_setted_Key) as? Bool ?? false ? nil : {
-                Date().timeIntervalSince1970
-            }())
+                print("associatedValueD")
+            })
         }
         set {
-            objc_setAssociatedObject(self, &Self.__associated_associatedValueD_Key, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(self, &Self.__associated_associatedValueD_Key, newValue, .OBJC_ASSOCIATION_COPY)
             objc_setAssociatedObject(self, &Self.__associated_associatedValueD_setted_Key, true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
     }
-    fileprivate static var __associated_associatedValueD_Key: Bool = false
-    fileprivate static var __associated_associatedValueD_setted_Key: Bool = false
+    fileprivate static var __associated_associatedValueD_Key: Void?
+    fileprivate static var __associated_associatedValueD_setted_Key: Void?
 }
 ```
 
