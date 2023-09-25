@@ -13,10 +13,10 @@ let package = Package(
             name: "AssociatedObject",
             targets: ["AssociatedObject"]
         ),
-        .executable(
-            name: "AssociatedObjectClient",
-            targets: ["AssociatedObjectClient"]
-        ),
+//        .executable(
+//            name: "AssociatedObjectClient",
+//            targets: ["AssociatedObjectClient"]
+//        ),
     ],
     dependencies: [
         // Depend on the latest Swift 5.9 prerelease of SwiftSyntax

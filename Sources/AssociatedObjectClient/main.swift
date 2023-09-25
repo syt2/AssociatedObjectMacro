@@ -11,7 +11,7 @@ extension NSObject {
     var associatedValueB: Date?
     
     // Adding willSet and didSet callbacks.
-    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: UserDefaults.standard.integer(forKey: "KeyC"))
+    @AssociatedObject(policy: .OBJC_ASSOCIATION_RETAIN_NONATOMIC, defaultValue: 100)
     var associatedValueC: Int {
         willSet(newValueC) {
             print("set value C to \(newValueC)")

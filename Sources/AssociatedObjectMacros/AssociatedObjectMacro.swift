@@ -22,15 +22,15 @@ extension AssociatedObjectMacro: PeerMacro {
         // associated object key
         // fileprivate static var __associated_{identifier}_Key: Void?
         let keyDeclaration = VariableDeclSyntax(
-            modifiers: ModifierListSyntax {
+            modifiers: DeclModifierListSyntax {
                 DeclModifierSyntax(name: .keyword(.fileprivate))
                 DeclModifierSyntax(name: .keyword(.static))
             },
-            bindingKeyword: .keyword(.var),
+            bindingSpecifier: .keyword(.var),
             bindings: PatternBindingListSyntax {
                 PatternBindingSyntax(
                     pattern: IdentifierPatternSyntax(identifier: associateKeySyntax(of: identifier)),
-                    typeAnnotation: .init(type: OptionalTypeSyntax(wrappedType: SimpleTypeIdentifierSyntax(name: "Void")))
+                    typeAnnotation: .init(type: OptionalTypeSyntax(wrappedType: IdentifierTypeSyntax(name: "Void")))
                 )
             }
         )
@@ -41,15 +41,15 @@ extension AssociatedObjectMacro: PeerMacro {
             // associated object setted flag key, only for non-optional type which default value != nil
             // fileprivate static var __associated_{identifier}_setted_Key: Void?
             let valueSettedDeclaration = VariableDeclSyntax(
-                modifiers: ModifierListSyntax {
+                modifiers: DeclModifierListSyntax {
                     DeclModifierSyntax(name: .keyword(.fileprivate))
                     DeclModifierSyntax(name: .keyword(.static))
                 },
-                bindingKeyword: .keyword(.var),
+                bindingSpecifier: .keyword(.var),
                 bindings: PatternBindingListSyntax {
                     PatternBindingSyntax(
                         pattern: IdentifierPatternSyntax(identifier: associateKeySetFlagSyntax(of: identifier)),
-                        typeAnnotation: .init(type: OptionalTypeSyntax(wrappedType: SimpleTypeIdentifierSyntax(name: "Void")))
+                        typeAnnotation: .init(type: OptionalTypeSyntax(wrappedType: IdentifierTypeSyntax(name: "Void")))
                     )
                 }
             )
@@ -75,7 +75,7 @@ extension AssociatedObjectMacro: AccessorMacro {
         }
         
         // associated object policy type
-        guard case let .argumentList(arguments) = node.argument,
+        guard case let .argumentList(arguments) = node.arguments,
               let policy = arguments.first(where: {
                   $0.label?.tokenKind == .identifier("policy")
               })?.expression.as(MemberAccessExprSyntax.self)
@@ -101,7 +101,8 @@ extension AssociatedObjectMacro: AccessorMacro {
             type = wrappedType
         } else if let originalType {
             type = originalType
-            guard !defaultValue.is(NilLiteralExprSyntax.self) else {            context.diagnose(AssociatedObjectMacroDiagnostic.requireNonNilDefaultValue.diagnose(at: declaration))
+            guard !defaultValue.is(NilLiteralExprSyntax.self) else {
+                context.diagnose(AssociatedObjectMacroDiagnostic.requireNonNilDefaultValue.diagnose(at: declaration))
                 return []
             }
         } else {
@@ -113,27 +114,27 @@ extension AssociatedObjectMacro: AccessorMacro {
         var willSetBlock: SetActionBlockComponent? = nil
         var didSetBlock: SetActionBlockComponent? = nil
         
-        if let accessor = binding.accessor {
-            switch accessor {
+        if let accessor = binding.accessorBlock {
+            switch accessor.accessors {
             case .accessors(let accessorBlockSyntax):
-                for accessor in accessorBlockSyntax.accessors {
-                    switch accessor.accessorKind.tokenKind {
+                for accessor in accessorBlockSyntax {
+                    switch accessor.accessorSpecifier.tokenKind {
                     case .keyword(.didSet):
                         guard didSetBlock == nil,
                               let body = accessor.body,
-                              accessor.parameter?.unexpectedBetweenNameAndRightParen == nil else {
+                              accessor.parameters?.unexpectedBetweenNameAndRightParen == nil else {
                             context.diagnose(AssociatedObjectMacroDiagnostic.setActionBlocksInvalidate.diagnose(at: declaration))
                             return []
                         }
-                        didSetBlock = (body, accessor.parameter?.name ?? .identifier("oldValue"))
+                        didSetBlock = (body, accessor.parameters?.name ?? .identifier("oldValue"))
                     case .keyword(.willSet):
                         guard willSetBlock == nil,
                               let body = accessor.body,
-                              accessor.parameter?.unexpectedBetweenNameAndRightParen == nil else {
+                              accessor.parameters?.unexpectedBetweenNameAndRightParen == nil else {
                             context.diagnose(AssociatedObjectMacroDiagnostic.setActionBlocksInvalidate.diagnose(at: declaration))
                             return []
                         }
-                        willSetBlock = (body, accessor.parameter?.name ?? .identifier("newValue"))
+                        willSetBlock = (body, accessor.parameters?.name ?? .identifier("newValue"))
                     default:
                         context.diagnose(AssociatedObjectMacroDiagnostic.onlySupportSetActionInClosure.diagnose(at: declaration))
                         return []
@@ -166,7 +167,7 @@ private extension AssociatedObjectMacro {
         // If value cannot be nil, add a setted flag
         let valueOptionable = binding.typeAnnotation?.type.is(OptionalTypeSyntax.self) == true
         var defaultValueNotNil = false
-        if case let .argumentList(arguments) = node.argument,
+        if case let .argumentList(arguments) = node.arguments,
            let defaultValue: ExprSyntaxProtocol = arguments.first(where: {
                $0.label?.tokenKind == .identifier("defaultValue")
            })?.expression ?? NilLiteralExprSyntax() {
@@ -221,6 +222,7 @@ private extension AssociatedObjectMacro {
         if settedFlag {
             insideSetBlock.append(contentsOf:
                 """
+                
                 objc_setAssociatedObject(self, &Self.\(associateKeySetFlagSyntax(of: identifier)), true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
                 """
             )
