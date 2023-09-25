@@ -12,6 +12,7 @@ Simply add this repository to your project using SPM to use it.
 - File > Swift Packages > Add Package Dependency
 - Add `https://github.com/syt2/AssociatedObjectMacro` in SPM
 - `import AssociatedObject` in files
+- `Trust & Enable` `AssociatedObjectMacro` if need
 
 ## Usage
 Example usage within your project
